@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加新闻</title>
+    <link rel="stylesheet" href="../css/wangEditor.css">
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <link rel="stylesheet" href="../css/BS.css">
+</head>
+<body>
+    <!--添加新闻-->
+    <div class="news-add layui-form layui-form-pane" lay-filter="news-add" name="news-add" style="margin: 20px 20px 0 20px;">
+        <!-- 新闻类别 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">新闻类别</label>
+            <div class="layui-input-inline">
+                <select name="type" id="type" lay-verify="" lay-search></select>
+            </div>
+        </div>
+        <!-- 新闻标题 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label" for="newTitle">新闻标题</label>
+            <div class="layui-input-block">
+                <input type="text" class="layui-input" id="newTitle"  placeholder="请填写新闻标题" autocomplete="off">
+            </div>
+        </div>
+        <!-- 作者 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label" for="newAuthor">作 &nbsp;&nbsp; &nbsp;&nbsp;者</label>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" id="newAuthor" placeholder="请填写作者" autocomplete="off">
+            </div>
+        </div>
+        <!-- 文章内容 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="margin-right: 10px;">文章内容</label>
+            <div class="layui-input-block">
+                <div id="container" class="layui-border" style="z-index: 99;">
+                    <div id="toolbar-container"></div>
+                    <div id="editor-container" ></div>
+                </div>
+            </div>
+        </div>
+        <!-- 提交新闻 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="border: none;background: none;"></label>
+            <div class="layui-input-inline">
+                <input type="submit" value="添加新闻" id="addNews" class="layui-btn">
+            </div>
+        </div>
+    </div>
+</body>
+<script src="../js/jquery-3.6.0.js"></script>
+<script src="../js/listener.js"></script>
+<script src="../layui/layui.js"></script>
+<script src="../js/wangEditor.js"></script>
+<script>
+    //获取相关的引用
+    const type = $('#type');
+    const title = $('#newTitle');
+    const author = $('#newAuthor');
+    const adminInfo =  JSON.parse(localStorage.getItem('adminData'))
+
+    /*初始化数据*/
+    $(function (){
+        //初始化下拉菜单
+        renderSelect();
+    });
+
+    /*渲染新闻类别下拉框*/
+    function renderSelect() {
+        $.post({
+            url: '/news/typeServlet',
+            success: function(data) {
+                data = $.parseJSON(data).data;
+                var selectHtml = '<option value="">请选择一个类别</option>';
+                for(let i=0;i<data.length;i++) {
+                    selectHtml += '<option value="'+data[i].tid+'">'+data[i].tname+'</option>'
+                }
+                $('#type').html(selectHtml);
+                layui.form.render('select');
+            }
+        });
+    }
+
+    /*添加新闻的点击事件*/
+    $('#addNews').click(function (){
+        //检查内容
+        if(examAdd()) {
+            //添加新闻操作
+            $.post({
+                url: '/news/newsServlet',
+                data: {
+                    type: '2',
+                    title: title.val().trim(),
+                    typeId: type.val().trim(),
+                    author: author.val().trim(),
+                    content: editor.getHtml().trim(),
+                    uid: adminInfo.id
+                },
+                success: function(isAdd) {
+                    //判断结果
+                    if(isAdd.trim() === 'true') {
+                        layer.alert('添加成功!', {
+                            end: function () {
+                                //清空表单
+                                title.html("");
+                                author.html("");
+                                location.reload();
+                            }
+                        });
+                    } else {
+                        layer.alert('添加失败!');
+                    }
+                }
+            });
+        }
+    });
+
+    /*检查添加新闻的内容*/
+    function examAdd() {
+        isExam = false;
+        //判断内容
+        if (type.val().trim() === "") {
+            layer.msg('请选择类别',);
+        } else if (title.val().trim() === "") {
+            layer.msg('请输入标题');
+        } else if (editor.getText().trim() === "") {
+            layer.msg('请输入内容');
+        } else {
+            isExam = true;
+        }
+        return isExam;
+    }
+
+    /*
+     * 以下是富文本编辑器的配置
+     */
+
+    // 编辑器配置
+    const editorConfig = { MENU_CONF: {}}
+    editorConfig.placeholder = '请输入内容';
+    /*editorConfig.onChange = (editor) => {
+        // 当编辑器选区、内容变化时，即触发
+        console.log('content', editor.children)
+        console.log('html', editor.getHtml())
+    }*/
+
+    /*配置图片*/
+    // editorConfig.MENU_CONF['uploadImage'] = {
+    //     server: '/upload'
+    // }
+    // /*配置视频*/
+    // editorConfig.MENU_CONF['uploadVideo'] = {
+    //     server: '/upload'
+    // }
+
+
+    const { createEditor, createToolbar } = window.wangEditor;
+
+    // 工具栏配置
+    const toolbarConfig = {
+        excludeKeys: [
+            'group-image',
+            'group-video'
+        ]
+    }
+    
+    // 创建编辑器
+    const editor = createEditor({
+        selector: '#editor-container',
+        config: editorConfig,
+        mode: 'default', // 或 'simple' 参考下文
+    });
+    // 创建工具栏
+    const toolbar = createToolbar({
+        editor,
+        selector: '#toolbar-container',
+        config: toolbarConfig,
+        mode: 'default' // 或 'simple' 参考下文
+    });
+</script>
+
+</html>

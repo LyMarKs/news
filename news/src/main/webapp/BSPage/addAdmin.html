@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加管理员</title>
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <script src="../layui/layui.js"></script>
+    <script src="../js/jquery-3.6.0.js"></script>
+    <link rel="stylesheet" href="../css/BS.css">
+</head>
+<body>
+    <!--添加管理员-->
+    <div class="type-add layui-form layui-form-pane" style="margin: 20px 20px 0 20px;">
+        <!-- 管理员用户名 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label" for="adminName">用户名</label>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" id="adminName"  placeholder="请输入管理员用户名">
+            </div>
+        </div>
+        <!-- 管理员密码 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label" for="adminPwd">密码</label>
+            <div class="layui-input-inline">
+                <input type="password" class="layui-input" id="adminPwd"  placeholder="请输入管理员密码">
+            </div>
+        </div>
+        <!-- 管理员身份 -->
+        <div class="layui-form-item" id="adminIdentity">
+            <label class="layui-form-label">身份</label>
+            <div class="layui-input-inline">
+                <select name="identity" id="identity" lay-verify="">
+                    <option value="1">管理员</option>
+                    <option value="2">超级管理员</option>
+                </select>
+            </div>
+        </div>
+        <!-- 提交新闻类别 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="border: none;background: none;"></label>
+            <div class="layui-input-inline">
+                <input type="submit" value="添加管理员" class="layui-btn" id="addAdmin">
+            </div>
+        </div>
+    </div>
+</body>
+<script src="../js/listener.js"></script>
+<script>
+    //获取参数部分字符串
+    var isEdit = (location.search.trim() !== "");
+    //修改的数据
+    var data;
+    //管理员数据
+    var adminData;
+
+    $(function (){
+        //获取所有管理员数据
+        $.post({
+            url: '/news/adminServlet',
+            data: {
+                type: 1
+            },
+            success: function(jsonData) {
+                jsonData = $.parseJSON(jsonData);
+                adminData=jsonData.data;
+            }
+        });
+        //判断是否为修改管理员
+        if(isEdit) {
+            //获取值
+            data = JSON.parse(localStorage.getItem('adminData'));
+            //设置值
+            $('#addAdmin').val('修改管理员');
+            $('#adminName').val(data.name);
+            $('#adminPwd').val(data.pwd);
+            $('#identity').val(data.identity);
+            $('#adminIdentity input').val($('#identity').find('option[value='+data.identity+']').html());
+            $('#adminPwd').attr('type','text');
+        }
+    });
+    
+    $('#addAdmin').click(function (){
+        //获取所有值
+        let name = $('#adminName').val().trim();
+        let pwd = $('#adminPwd').val().trim();
+        let identity = $('#identity').val();
+        let isExam = examText(name, pwd, identity);
+        //检查内容
+        if(isExam) {
+            let type,describe;
+            //修改管理员操作
+            if(isEdit) {
+                describe = '管理员已修改!';
+                type = 3;
+            } else {    //添加管理员操作
+                describe = '管理员已添加!';
+                type = 2;
+            }
+            //判断id值
+            let id = 0;
+            if(data !== undefined) id=data.id;
+            //ajax post请求
+            $.post({
+                url: '/news/adminServlet',
+                data: {
+                    id: id,
+                    type: type,
+                    name: name,
+                    pwd: pwd,
+                    identity: $('#identity').val()
+                },
+                success: function () {
+                    layer.alert(describe, {
+                        resize: false,
+                        end: function (){
+                            if(isEdit) {
+                                var index = parent.layer.getFrameIndex(window.name);
+                                parent.layer.close(index);
+                            } else {
+                                location.reload(true);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    });
+
+    /*检查添加的内容*/
+    function examText(name, pwd, identity) {
+        let isExam = false;
+        //判断管理员用户名非空
+        if(name === "") {
+            layer.msg('请输入管理员用户名');
+        } 
+        //判断管理员密码非空
+        else if (pwd === "") {
+            layer.msg('请输入管理员密码');
+        }
+        //判断是否是修改操作
+        else if(isEdit) {
+            if ((name === data.name) && (pwd === data.pwd) && (identity === data.identity)) {
+                layer.msg('还未修改任何数据');
+            } else {
+                isExam = true;
+            }
+        } else {
+            isExam = true;
+        }
+        if(isExam) {
+            //判断用户名是否已存在
+            for(let i=0;i<adminData.length;i++) {
+                if(name === adminData[i].uname) {
+                    //判断是否是修改用户
+                    if(isEdit) {
+                        if((pwd === data.pwd) && (identity === data.identity)) {
+                            layer.msg('该用户已存在!');
+                        } else {
+                            break;
+                        }
+                    } else {
+                        layer.msg('该用户已存在!');
+                    }
+                    isExam = false;
+                }
+            }
+        }
+        return isExam;
+    }
+</script>
+</html>

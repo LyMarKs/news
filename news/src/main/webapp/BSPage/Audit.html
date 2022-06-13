@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>待审核</title>
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <script src="../js/jquery-3.6.0.js"></script>
+    <script src="../layui/layui.js"></script>
+    <style>
+        .pass
+        ,.reject {
+            width: 50px;
+            height: 26px;
+            line-height: 26px;
+        }
+        textarea {
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+    <!--待审核新闻-->
+    <div class="news-see layui-form layui-form-pane">
+        <!--表格部分-->
+        <table class="layui-hide" id="table-audit" lay-filter="table"></table>
+    </div>
+</body>
+<script src="../js/listener.js"></script>
+<script type="text/html" id="audioOperate">
+    <a class="layui-btn layui-btn-xs pass" lay-event="pass">通过</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs reject" lay-event="reject">驳回</a>
+</script>
+<script>
+    var table = layui.table;
+    const adminInfo = JSON.parse(localStorage.getItem('adminData'));
+
+    /*初始化表头数据*/
+    $(function () {
+        //设置表头
+        let head = [[
+            {
+                field: 'id',
+                title: '编号',
+                width: 60,
+                align: 'center',
+                unresize: true
+            },
+            {
+                field: 'title',
+                title: '标题',
+                unresize: true
+            },
+            {
+                field: 'author',
+                title: '作者',
+                width: 100,
+                unresize: true
+            },
+            {
+                field: 'typeName',
+                title: '类别',
+                width: 100,
+                align: 'center',
+                unresize: true
+            }
+        ]];
+        let uid = -1;
+        //判断管理员身份
+        if(adminInfo.identity !== 2) {
+            uid = adminInfo.id;
+        } else {
+            //使用一个临时数组来增加原数组大小，设置操作列
+            let temp = [[head.length+1]];
+            for (let i = 0; i < head[0].length; i++) {
+                temp[0][i]=head[0][i];
+            }
+            temp[0][head[0].length]={
+                field: 'right',
+                title: '操作',
+                width: 213,
+                align: 'center',
+                toolbar: '#audioOperate'
+            };
+            head = temp;
+        }
+        // console.log(head);
+        layui.use(['form', 'layer', 'table'], function () {
+            table.render({
+                id: 'audit',
+                elem: '#table-audit',
+                url: '/news/releaseServlet?type=1&uid=' + uid,
+                width: 1650,
+                cols: head
+            });
+        });
+    });
+
+    /*表格功能的事件*/
+    table.on('tool(table)', function (obj) {
+        var data = obj.data; //获得当前行数据
+        var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+        var tr = obj.tr; //获得当前行 tr 的 DOM 对象（如果有的话）
+
+        let status = 1;
+
+        //通过
+        if (layEvent === 'pass') {
+            layer.confirm("确定要通过吗？", function (index) {
+                layer.close(index);
+                //修改新闻发布状态
+                auditSuccess({
+                    type: 2,
+                    nid: data.id
+                });
+                layer.msg('已通过',{icon: 1});
+            });
+        }
+        //驳回
+        else if (layEvent === 'reject') {
+            layer.prompt({
+                title: '驳回理由',
+                formType: 2
+            },function (text, index) {
+                if(text.trim() !== "") {
+                    layer.close(index);
+                    //修改新闻发布状态
+                    auditSuccess({
+                        type: 0,
+                        nid: data.id,
+                        reason: text
+                    });
+                    layer.msg('已驳回',{icon: 1});
+                } else {
+                    layer.msg('内容不能为空',{time:1000});
+                }
+            });
+        }
+    });
+
+    /*修改新闻发布状态*/
+    function auditSuccess(data) {
+        $.post({
+            url: '/news/releaseOperate',
+            data: data,
+            success: function () {
+                table.reload('audit');
+            }
+        });
+    }
+</script>
+</html>

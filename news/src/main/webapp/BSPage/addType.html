@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加分类</title>
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <script src="../layui/layui.js"></script>
+    <script src="../js/jquery-3.6.0.js"></script>
+    <link rel="stylesheet" href="../css/BS.css">
+</head>
+<body>
+    <!--添加新闻-->
+    <div class="type-add layui-form layui-form-pane" style="margin: 20px 20px 0 20px;">
+        <!-- 类别名称 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label" for="newType">类别名称</label>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" id="newType"  placeholder="请输入类别名称">
+            </div>
+        </div>
+        <!-- 提交新闻类别 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="border: none;background: none;"></label>
+            <div class="layui-input-inline">
+                <input type="submit" value="添加类别" class="layui-btn" id="addType">
+            </div>
+        </div>
+    </div>
+</body>
+<script src="../js/listener.js"></script>
+<script>
+    $('#addType').click(function (){
+        //获取输入的类别名称
+        let newType = $('#newType').val().trim();
+        //判断值
+        if (newType === "") {
+            layer.msg('请输入类别名称');
+        } else {
+            $.post({
+                url: '/news/typeServlet',
+                data: {
+                    type: '1',
+                    select: newType
+                },
+                success: addNewType
+            });
+        }
+    });
+    
+    function addNewType(status) {
+        //判断类别名称是否存在
+        if(status.trim() === '1') {
+            layer.msg('此类别已存在!');
+        } else if(status === '0') {
+            add(2);
+        } else {
+            add(3);
+        }
+    }
+
+    function add(type) {
+        $.post({
+            url: '/news/typeServlet',
+            data: {
+                type: type,
+                typeName: $('#newType').val().trim()
+            },
+            success: function() {
+                layer.alert('添加成功!', {
+                    end: function (){
+                        $('#newType').val("");
+                    }
+                });
+            }
+        });
+    }
+</script>
+</html>

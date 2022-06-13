@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>已发布</title>
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <script src="../js/jquery-3.6.0.js"></script>
+    <script src="../layui/layui.js"></script>
+</head>
+<body>
+<!--待审核新闻-->
+<div class="news-see layui-form layui-form-pane">
+    <!--表格部分-->
+    <table class="layui-hide" id="table-succeed" lay-filter="table"></table>
+</div>
+</body>
+<script src="../js/listener.js"></script>
+<script>
+    var table = layui.table;
+    const adminInfo = JSON.parse(localStorage.getItem('adminData'));
+
+    $(function () {
+        let uid = -1;
+        //判断管理员身份
+        if(adminInfo.identity !== 2) {
+            uid = adminInfo.id;
+        }
+        layui.use(['form', 'layer', 'table'], function () {
+            table.render({
+                id: 'succeed',
+                elem: '#table-succeed',
+                url: '/news/releaseServlet?type=2&uid=' + uid,
+                width: 1650,
+                cols: [[
+                    {
+                        field: 'id',
+                        title: '编号',
+                        width: 60,
+                        align: 'center',
+                        unresize: true
+                    },
+                    {
+                        field: 'title',
+                        title: '标题',
+                        unresize: true
+                    },
+                    {
+                        field: 'author',
+                        title: '作者',
+                        width: 100,
+                        unresize: true
+                    },
+                    {
+                        field: 'typeName',
+                        title: '类别',
+                        width: 100,
+                        align: 'center',
+                        unresize: true
+                    }
+                ]]
+            });
+        });
+    });
+</script>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>已驳回</title>
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <script src="../js/jquery-3.6.0.js"></script>
+    <script src="../layui/layui.js"></script>
+    <style>
+        .cancel,
+        .reason {
+            padding: 15px 15px;
+            line-height: 0;
+        }
+    </style>
+</head>
+<body>
+<!--待审核新闻-->
+<div class="news-see layui-form layui-form-pane">
+    <!--表格部分-->
+    <table class="layui-hide" id="table-fail" lay-filter="table"></table>
+</div>
+</body>
+<script src="../js/listener.js"></script>
+<script type="text/html" id="superOperate">
+    <a class="layui-btn layui-btn-danger layui-btn-xs cancel" id="cancel" lay-event="cancel">取消驳回</a>
+</script>
+<script type="text/html" id="adminOperate">
+    <a class="layui-btn layui-btn-danger layui-btn-xs reason" id="reason" lay-event="reason">驳回理由</a>
+</script>
+<script>
+    var table = layui.table;
+    const adminInfo = JSON.parse(localStorage.getItem('adminData'));
+
+    $(function () {
+        //表头
+        let head = [[
+            {
+                field: 'id',
+                title: '编号',
+                width: 60,
+                align: 'center',
+                unresize: true
+            },
+            {
+                field: 'title',
+                title: '标题',
+                unresize: true
+            },
+            {
+                field: 'author',
+                title: '作者',
+                width: 100,
+                unresize: true
+            },
+            {
+                field: 'typeName',
+                title: '类别',
+                width: 100,
+                align: 'center',
+                unresize: true
+            }
+        ]];
+        let uid = -1;
+        let operate;
+        if(adminInfo.identity === 1) {
+            uid = adminInfo.id;
+            operate = 'adminOperate';
+        } else if(adminInfo.identity === 2) {
+            operate = 'superOperate';
+        }
+        //添加工具列
+        let temp = [[head.length+1]];   //使用一个临时数组来增加原数组大小，设置操作列
+        for (let i = 0; i < head[0].length; i++) {
+            temp[0][i]=head[0][i];
+        }
+        temp[0][head[0].length] = {
+            field: 'right',
+            title: '操作',
+            width: 150,
+            align: 'center',
+            toolbar: '#'+operate
+        };
+        head = temp;
+        // console.log(head);
+        layui.use(['form', 'layer', 'table'], function () {
+            table.render({
+                id: 'fail',
+                elem: '#table-fail',
+                url: '/news/releaseServlet?type=0&uid=' + uid,
+                width: 1650,
+                cols: head
+            });
+        });
+    });
+
+    /*表格功能的事件*/
+    table.on('tool(table)', function (obj) {
+        var data = obj.data; //获得当前行数据
+        var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+        var tr = obj.tr; //获得当前行 tr 的 DOM 对象（如果有的话）
+
+        //驳回理由
+        if(layEvent === 'reason') {
+            layer.alert(data.reason, {title:'驳回理由'});
+        } else {
+            layer.confirm('确定要取消驳回吗?', function (index) {
+                layer.close(index);
+                //修改发布状态（已驳回 -> 未审核）
+                $.post({
+                    url: '/news/releaseOperate',
+                    data: {
+                        type: 1,
+                        nid: data.id
+                    },
+                    success: function () {
+                        layer.msg('取消驳回成功!',{
+                            icon:1
+                        });
+                        table.reload('fail');
+                    }
+                });
+            });
+        }
+    });
+</script>
+</html>

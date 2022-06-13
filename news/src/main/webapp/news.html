@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        body {
+            font-family: '微软雅黑';
+            display: flex;
+            justify-content: center;
+        }
+        .box {
+            min-width: 700px;
+            max-width: 1000px;
+        }
+        .header p {
+            font-size: 13px;
+            line-height: 10px;
+            color: #666;
+        }
+        .box .content {
+            margin: 20px 0 0 80px;
+            font-size: 18px;
+            color: #444;
+            line-height: 30px;
+        }
+        .box #back {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<script src="js/jquery-3.6.0.js"></script>
+<script>
+    $(function (){
+        readData();
+    });
+
+    function readData() {
+        //获取数据
+        let data = JSON.parse(localStorage.getItem('data'));
+        //设置元素内容
+        $('title').html(data.title);
+        $('#title').html(data.title);
+        $('#time').html(data.time);
+        //判断作者
+        let author = data.author.trim();
+        if(author === "") {
+            $('#author').html('作者：匿名');
+        } else {
+            $('#author').html('作者：'+data.author);
+        }
+        $('#type').html('新闻类别：'+data.typeName);
+        $('.content').html(data.content);
+    }
+</script>
+<body>
+    <div class="box">
+        <!-- <div>
+            <a href="BSPage/seeNews.html" id="back">&lt;返回</a>
+        </div> -->
+        <div class="header">
+            <h1 id="title">教育部：“职教高考”制度正加快建立”</h1>
+            <p id="time">2022-05-24 10:17:06</p>
+            <p id="author">作者：匿名</p>
+            <p id="type">类别：教育</p>
+            <hr size="1" color="#ccc">
+        </div>
+        <div class="content">
+            在教育部今天召开的新闻发布会上，教育部职业教育与成人教育司司长陈子季介绍，党的十八大以来，我国职业教
+            育与普通教育相互融通，为学生不同成长阶段提供多样化选择、多路径成才的畅通渠道。目前，全国有4500余所职业学校支持中小学开展劳动教育实践和职业启蒙教育，辐射中小学近11万所，参与人次超过1500万。同
+            时，“职教高考”制度正加快建立，“文化素质+职业技能”考试招生办法正在完善，这将为中职学生和普通高中学生提供更适合的多样化发展机会。据了解，2014年《国务院关于深化考试招生制度改革的实施意见》印发后
+            ，高职分类考试规模逐年扩大，目前已经成为职业学校学生和普通高中学生接受高等职业教育的主渠道。
+        </div>
+    </div>
+</body>
+</html>

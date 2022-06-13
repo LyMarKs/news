@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查看新闻</title>
+    <link rel="stylesheet" href="layui/css/layui.css">
+    <link rel="stylesheet" href="css/BS.css">
+    <script src="layui/layui.js"></script>
+    <script src="js/jquery-3.6.0.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 100px;
+            user-select: none;
+        }
+        .link {
+            position: fixed;
+            bottom: 1px;
+        }
+        .link a {
+            color: #eee;
+            transition: all 0.3s;
+        }
+        .link a:hover {
+            color: #666;
+        }
+        #table-news  tr:hover {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="color: deepskyblue;">新闻列表</h1>
+    <!--查看新闻-->
+    <div class="news-see layui-form layui-form-pane">
+        <!--表格部分-->
+        <table class="layui-hide" id="table-news" lay-filter="table"></table>
+    </div>
+    <div class="link">
+        <a href="/news/login.html">进入后台</a>
+    </div>
+</body>
+<script>
+    var table = layui.table;
+    /*初始化表格数据*/
+    $(function () {
+        layui.use(['form', 'layer', 'table'], function () {
+            table.render({
+                id: 'news',
+                elem: '#table-news',
+                url: '/news/newsServlet',
+                method: 'post',
+                width: 1650,
+                cols: [
+                    [
+                        {
+                            field: 'title',
+                            title: '标题',
+                            unresize: true
+                        },
+                        {
+                            field: 'typeName',
+                            title: '类别',
+                            width: 100,
+                            align: 'center',
+                            unresize: true
+                        },
+                        {
+                            field: 'author',
+                            title: '作者',
+                            width: 100,
+                            align: 'center',
+                            unresize: true
+                        },
+                        {
+                            field: 'clicks',
+                            title: '点击次数',
+                            align: 'center',
+                            width: 100,
+                            unresize: true
+                        },
+                        {
+                            field: 'releaseTime',
+                            title: '发布时间',
+                            width: 180,
+                            unresize: true,
+                            autoSort: false,
+                            sort: true
+                        }
+                    ]
+                ],
+                initSort: {
+                    field: 'clicks',
+                    type: 'desc'
+                }
+            });
+        });
+    });
+    
+    /*行单击事件*/
+    table.on('row(table)', function (obj){
+        var data = obj.data; //获得当前行数据
+        var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+        var tr = obj.tr; //获得当前行 tr 的 DOM 对象（如果有的话）
+        //获取数据
+        let newsData = JSON.stringify({
+            title: data.title,
+            time: data.releaseTime,
+            author: data.author,
+            typeName: data.typeName,
+            content: data.content
+        });
+        localStorage.setItem("data", newsData);
+        //打开新闻页面
+        window.open('/news/news.html');
+        //重载表格
+        totalClicks(data.id);
+    });
+
+    /*排序事件*/
+    table.on('sort(table)', function (obj){
+        console.log(obj.type);
+        table.reload('news', {
+            initSort: obj,
+            where: {
+                field: obj.field,   //排序字段
+                order: obj.type     //排序方式
+            }
+        });
+    });
+    
+    /*累加次数*/
+    function totalClicks(id) {
+        //增加次数
+        $.post({
+            url: '/news/addCount',
+            data: {
+                id: id,
+            },
+            success: function (){
+                //重载表格
+                table.reload('news');
+            }
+        });
+    }
+</script>
+
+</html>

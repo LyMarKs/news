@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>查看新闻</title>
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <link rel="stylesheet" href="../css/BS.css">
+    <script src="../layui/layui.js"></script>
+    <script src="../js/jquery-3.6.0.js"></script>
+</head>
+
+<body>
+    <!--查看新闻-->
+    <div class="news-see layui-form layui-form-pane">
+        <!--搜索部分-->
+        <div class="layui-form-item" style="padding-left: 600px;">
+            <label class="layui-form-label" for="select">搜 索</label>
+            <div class="layui-input-inline">
+                <input class="layui-input" type="text" name="select" id="select" placeholder="请输入标题或类别">
+            </div>
+            <button class="layui-btn" type="submit" id="news-select">查 询</button>
+        </div>
+        <!--表格部分-->
+        <table class="layui-hide" id="table-news" lay-filter="table"></table>
+    </div>
+</body>
+<script src="../js/listener.js"></script>
+<script type="text/html" id="barTool">
+    <a class="layui-btn layui-btn-xs newsDetail" lay-event="detail" href="../news.html" target="_blank">查看</a>
+</script>
+<script>
+    var table = layui.table;
+    var adminInfo = JSON.parse(localStorage.getItem('adminData'));
+
+    $(function () {
+        if (adminInfo !== null) {
+            loadTable();
+        }
+    });
+
+    function loadTable() {
+        //判断管理员身份
+        if (adminInfo.id === 2) {
+            $('#barTool').html($('#barTool').html()+'<a class="layui-btn layui-btn-danger layui-btn-xs newsDel" lay-event="del">删除</a>');
+        }
+        //渲染表格
+        layui.use(['form', 'layer', 'table'], function () {
+            table.render({
+                id: 'news',
+                elem: '#table-news',
+                url: '/news/newsServlet',
+                method: 'post',
+                width: 1650,
+                cols: [
+                    [{
+                            field: 'id',
+                            title: '编号',
+                            width: 60,
+                            align: 'center',
+                            unresize: true
+                        },
+                        {
+                            field: 'title',
+                            title: '标题',
+                            unresize: true
+                        },
+                        {
+                            field: 'typeName',
+                            title: '类别',
+                            width: 100,
+                            align: 'center',
+                            unresize: true
+                        },
+                        {
+                            field: 'author',
+                            title: '作者',
+                            width: 100,
+                            align: 'center',
+                            unresize: true
+                        },
+                        {
+                            field: 'clicks',
+                            title: '点击次数',
+                            align: 'center',
+                            width: 100,
+                            unresize: true
+                        },
+                        {
+                            field: 'alertTime',
+                            title: '修改时间',
+                            width: 180,
+                            unresize: true
+                        },
+                        {
+                            field: 'right',
+                            title: '操作',
+                            width: 200,
+                            align: 'center',
+                            toolbar: '#barTool'
+                        }
+                    ]
+                ]
+            });
+        });
+    }
+
+    /*表格功能的事件*/
+    table.on('tool(table)', function (obj) {
+        var data = obj.data; //获得当前行数据
+        var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+        var tr = obj.tr; //获得当前行 tr 的 DOM 对象（如果有的话）
+        
+        //查看
+        if (layEvent === 'detail') {
+            // console.log(data);
+            //获取数据
+            let newsData = JSON.stringify({
+                title: data.title,
+                time: data.releaseTime,
+                author: data.author,
+                typeName: data.typeName,
+                content: data.content
+            });
+            localStorage.setItem("data", newsData);
+            /*//增加次数
+            $.post({
+                url: '/news/addCount',
+                data: {
+                    id: data.id,
+                },
+                success: function (){
+                    //重载表格
+                    table.reload('news');
+                }
+            });*/
+        } else if (layEvent === 'del') { //删除
+            layer.confirm('真的要删除吗?', function (index) {
+                obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                layer.close(index);
+                //使用Ajax让Servlet处理数据库数据
+                $.post({
+                    url: '/news/newsServlet',
+                    data: {
+                        id: data.id,
+                        type: 4
+                    }
+                });
+            });
+        }
+    });
+
+    /*查看新闻的查询功能*/
+    $('#news-select').click(selectNews = function () {
+        //获取查询框的值
+        let selectInput = $('#select');
+        selectInput.val(selectInput.val().trim());
+        //重载表格
+        table.reload('news', {
+            url: '/news/newsServlet',
+            method: 'get',
+            where: {
+                type: 1,
+                select: selectInput.val()
+            }
+        });
+    });
+
+    /*查询框的键盘事件*/
+    $('#select').keyup(function (e) {
+        //判断是否按下了回车键
+        if (e.keyCode === 13) {
+            selectNews();
+        }
+    });
+</script>
+
+</html>

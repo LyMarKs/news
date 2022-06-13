@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台</title>
+    <link rel="stylesheet" href="layui/css/layui.css">
+    <link rel="stylesheet" href="css/BS.css">
+    <script src="layui/layui.js"></script>
+    <script src="js/jquery-3.6.0.js"></script>
+    <script src="js/listener.js"></script>
+    <script src="js/BSIndex.js"></script>
+</head>
+<body>
+    <!-- 顶部标题 -->
+    <div class="layui-header" id="topic">
+        <div class="layui-fluid">
+            <a href="" class="title">后台管理</a>
+            <div class="layui-nav" lay-bar="disabled">
+                <div class="layui-nav-item" lay-unselect="">
+                    <a href="javascript:;">
+                        <img class="layui-nav-img" src="images/200x200.jpg" alt="头像">
+                        <span id="adminName">simple</span>
+                        <i class="layui-icon layui-icon-down layui-nav-more"></i>
+                    </a>
+                    <!-- 二级菜单 -->
+                    <dl class="layui-nav-child">
+                        <dd><a href="/news/login.html" onclick="cutAccount()">换个账号</a></dd>
+                    </dl>
+                </div>
+                <div class="layui-nav-item">
+                    <a href="/news/index.html">退出</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 左侧菜单 -->
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <!--左侧导航栏-->
+            <ul class="layui-nav layui-nav-tree site-demo-nav">
+                <!--1.新闻管理-->
+                <li class="layui-nav-item layui-nav-itemed" id="news">
+                    <a class="javascript:;" href="javascript:;">新闻管理<i
+                            class="layui-icon layui-icon-down layui-nav-more"></i></a>
+                    <dl class="layui-nav-child">
+                        <dd id="seeNews">
+                            <!-- <a href="javascript:cutMenu(1);">查看新闻</a> -->
+                            <a href="BSPage/seeNews.html" target="show">查看新闻</a>
+                        </dd>
+                        <dd id="addNews">
+                            <a href="BSPage/addNews.html" target="show">添加新闻</a>
+                        </dd>
+                    </dl>
+                </li>
+                <!--2.新闻审核-->
+                <li class="layui-nav-item layui-nav-itemed" id="audit">
+                    <a class="javascript:;" href="javascript:;">新闻审核<i
+                            class="layui-icon layui-icon-down layui-nav-more"></i></a>
+                    <dl class="layui-nav-child">
+                        <dd id="reject">
+                            <a href="BSPage/Fail.html" target="show">已驳回</a>
+                        </dd>
+                        <dd id="noaudit">
+                            <a href="BSPage/Audit.html" target="show">待审核</a>
+                        </dd>
+                        <dd id="yesaudit">
+                            <a href="BSPage/Succeed.html" target="show">已审核</a>
+                        </dd>
+                    </dl>
+                </li>
+                <!--3.分类管理-->
+                <li class="layui-nav-item layui-nav-itemed" id="classify">
+                    <a class="javascript:;" href="javascript:;">分类管理<i
+                            class="layui-icon layui-icon-down layui-nav-more"></i></a>
+                    <dl class="layui-nav-child">
+                        <dd id="seeType">
+                            <a href="BSPage/seeType.html" target="show">查看分类</a>
+                        </dd>
+                        <dd id="addType">
+                            <a href="BSPage/addType.html" target="show">添加分类</a>
+                        </dd>
+                    </dl>
+                </li>
+                <!--4.管理员管理-->
+                <li class="layui-nav-item layui-nav-itemed" id="admin">
+                    <a class="javascript:;" href="javascript:;">管理员管理<i
+                            class="layui-icon layui-icon-down layui-nav-more"></i></a>
+                    <dl class="layui-nav-child">
+                        <dd id="seeAdmin">
+                            <a href="BSPage/seeAdmin.html" target="show">查看管理员</a>
+                        </dd>
+                        <dd id="addAdmin">
+                            <a href="BSPage/addAdmin.html" target="show">添加管理员</a>
+                        </dd>
+                    </dl>
+                </li>
+                <!--5.我的新闻-->
+                <li class="layui-nav-item layui-nav-itemed" id="myNews">
+                    <a class="javascript:;" href="javascript:;">我的新闻<i
+                            class="layui-icon layui-icon-down layui-nav-more"></i></a>
+                    <dl class="layui-nav-child">
+                        <dd id="isaudit">
+                            <a href="BSPage/Audit.html" target="show">正在审核</a>
+                        </dd>
+                        <dd id="isrelease">
+                            <a href="BSPage/Succeed.html" target="show">已发布</a>
+                        </dd>
+                        <dd id="isreject">
+                            <a href="BSPage/Fail.html" target="show">被驳回</a>
+                        </dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!--主体内容-->
+    <iframe name="show" class="layui-body" id="menu" src="BSPage/seeNews.html"></iframe>
+</body>
+</html>
